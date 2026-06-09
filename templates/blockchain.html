@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Blockchain | Blockchain Voting</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="page-wrapper">
+
+    <div class="topbar">
+        <div class="brand">
+            <div class="brand-icon">B</div>
+            <div class="brand-text">
+                <h2>Blockchain Voting</h2>
+                <p>Kiểm tra chuỗi block</p>
+            </div>
+        </div>
+
+        <div class="nav">
+            <a href="/vote">Bỏ phiếu</a>
+            <a href="/result">Kết quả</a>
+            <a href="/blockchain">Blockchain</a>
+            <a href="/logout">Đăng xuất</a>
+        </div>
+    </div>
+
+    <div class="hero">
+        <h1>Blockchain dữ liệu bỏ phiếu</h1>
+        <p>
+            Mỗi phiếu bầu hợp lệ được ghi thành một block. Các block liên kết với nhau bằng
+            previous_hash và current_hash để phát hiện thay đổi dữ liệu.
+        </p>
+    </div>
+
+    <div class="card">
+        <h2>Trạng thái toàn vẹn dữ liệu</h2>
+
+        {% if is_valid %}
+            <p class="success">{{ message }}</p>
+        {% else %}
+            <p class="error">{{ message }}</p>
+        {% endif %}
+
+        <p class="card-desc">
+            Nếu một block bị sửa dữ liệu, hash tính lại sẽ không trùng với current_hash đã lưu.
+            Khi đó hệ thống sẽ báo Blockchain không hợp lệ.
+        </p>
+    </div>
+
+    <br>
+
+    {% if blocks %}
+        {% for block in blocks %}
+            <div class="block-card">
+                <div class="block-header">
+                    <h3>Block #{{ block.block_index }}</h3>
+                    <span>Vote Transaction</span>
+                </div>
+
+                <div class="block-body">
+                    <div class="detail-list">
+                        <div class="detail-item">
+                            <span>Thời gian</span>
+                            <span>{{ block.timestamp }}</span>
+                        </div>
+
+                        <div class="detail-item">
+                            <span>Cuộc bỏ phiếu</span>
+                            <span>{{ block.election_title }}</span>
+                        </div>
+
+                        <div class="detail-item">
+                            <span>Ứng viên được chọn</span>
+                            <span>{{ block.candidate_name }}</span>
+                        </div>
+                    </div>
+
+                    <p><b>Mã ẩn danh người bỏ phiếu</b></p>
+                    <div class="hash-line">{{ block.voter_hash }}</div>
+
+                    <p><b>Mã liên kết block trước</b></p>
+                    <div class="hash-line">{{ block.previous_hash }}</div>
+
+                    <p><b>Mã xác thực block hiện tại</b></p>
+                    <div class="hash-line">{{ block.current_hash }}</div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="card empty-state">
+            <div class="icon">⛓️</div>
+            <h2>Chưa có block nào</h2>
+            <p>Hãy đăng nhập bằng tài khoản voter và bỏ phiếu để tạo block đầu tiên.</p>
+        </div>
+    {% endif %}
+
+    <p class="footer-note">Mô phỏng Blockchain bằng SQLite + SHA-256 hash.</p>
+</div>
+
+</body>
+</html>

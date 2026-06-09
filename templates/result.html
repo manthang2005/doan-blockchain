@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Kết quả | Blockchain Voting</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="page-wrapper">
+
+    <div class="topbar">
+        <div class="brand">
+            <div class="brand-icon">B</div>
+            <div class="brand-text">
+                <h2>Blockchain Voting</h2>
+                <p>Thống kê kết quả bỏ phiếu</p>
+            </div>
+        </div>
+
+        <div class="nav">
+            {% if session.get('role') == 'admin' %}
+                <a href="/admin">Quản trị</a>
+            {% else %}
+                <a href="/vote">Bỏ phiếu</a>
+            {% endif %}
+
+            <a href="/result">Kết quả</a>
+            <a href="/blockchain">Blockchain</a>
+            <a href="/logout">Đăng xuất</a>
+        </div>
+    </div>
+
+    {% if election %}
+
+        <div class="hero">
+            <h1>Kết quả: {{ election.title }}</h1>
+            <p>{{ election.description }}</p>
+        </div>
+
+        <div class="card">
+            <h2>Bảng kết quả</h2>
+            <p class="card-desc">
+                Số phiếu được tính trực tiếp từ bảng blocks, tức là từ dữ liệu đã ghi vào Blockchain.
+            </p>
+
+            {% set total = namespace(value=0) %}
+            {% for item in results %}
+                {% set total.value = total.value + item.total_votes %}
+            {% endfor %}
+
+            <div class="grid grid-2">
+                <div class="stat-card">
+                    <div class="stat-label">Tổng số phiếu</div>
+                    <div class="stat-value">{{ total.value }}</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">Số ứng viên</div>
+                    <div class="stat-value">{{ results|length }}</div>
+                </div>
+            </div>
+
+            <br>
+
+            <div class="table-wrapper">
+                <table>
+                    <tr>
+                        <th>Ứng viên</th>
+                        <th>Số phiếu</th>
+                        <th>Tỷ lệ</th>
+                        <th>Biểu đồ</th>
+                    </tr>
+
+                    {% for item in results %}
+                        {% if total.value > 0 %}
+                            {% set percent = (item.total_votes * 100 / total.value) %}
+                        {% else %}
+                            {% set percent = 0 %}
+                        {% endif %}
+
+                        <tr>
+                            <td><b>{{ item.name }}</b></td>
+                            <td>{{ item.total_votes }}</td>
+                            <td>{{ "%.1f"|format(percent) }}%</td>
+                            <td>
+                                <div class="result-bar">
+                                    <div class="result-fill" style="--percent: {{ percent }};"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+
+            <br>
+
+            <a class="btn" href="/result">Quay lại danh sách</a>
+            <a class="btn btn-outline" href="/blockchain">Xem Blockchain</a>
+
+            {% if session.get('role') == 'admin' %}
+                <a class="btn btn-outline" href="/admin">Quay lại quản trị</a>
+            {% endif %}
+        </div>
+
+    {% else %}
+
+        <div class="hero">
+            <h1>Kết quả bỏ phiếu</h1>
+            <p>
+                Chọn một cuộc bỏ phiếu để xem thống kê số phiếu, tỷ lệ phần trăm và dữ liệu liên quan.
+            </p>
+        </div>
+
+        <div class="card">
+            <h2>Danh sách cuộc bỏ phiếu</h2>
+
+            <div class="table-wrapper">
+                <table>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tên cuộc bỏ phiếu</th>
+                        <th>Mô tả</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+
+                    {% for election in elections %}
+                    <tr>
+                        <td>#{{ election.id }}</td>
+                        <td><b>{{ election.title }}</b></td>
+                        <td>{{ election.description }}</td>
+                        <td>
+                            {% if election.status == 'open' %}
+                                <span class="badge badge-open">Đang mở</span>
+                            {% else %}
+                                <span class="badge badge-closed">Đã đóng</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a class="btn" href="/result/{{ election.id }}">Xem kết quả</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+
+            {% if session.get('role') == 'admin' %}
+                <br>
+                <a class="btn btn-outline" href="/admin">Quay lại quản trị</a>
+            {% endif %}
+        </div>
+
+    {% endif %}
+
+    <p class="footer-note">Kết quả được tổng hợp từ các block đã ghi nhận trong Blockchain.</p>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Bỏ phiếu | Blockchain Voting</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="page-wrapper">
+
+    <div class="topbar">
+        <div class="brand">
+            <div class="brand-icon">B</div>
+            <div class="brand-text">
+                <h2>Blockchain Voting</h2>
+                <p>Xin chào, {{ username }}</p>
+            </div>
+        </div>
+
+        <div class="nav">
+            {% if session.get('role') == 'admin' %}
+                <a href="/admin">Quản trị</a>
+            {% else %}
+                <a href="/vote">Bỏ phiếu</a>
+            {% endif %}
+
+            <a href="/result">Kết quả</a>
+            <a href="/blockchain">Blockchain</a>
+            <a href="/logout">Đăng xuất</a>
+        </div>
+    </div>
+
+    {% if election %}
+
+        <div class="hero">
+            <h1>{{ election.title }}</h1>
+            <p>{{ election.description }}</p>
+        </div>
+
+        <div class="card">
+            <h2>Thông tin cuộc bỏ phiếu</h2>
+
+            <div class="detail-list">
+                <div class="detail-item">
+                    <span>Mã cuộc bỏ phiếu</span>
+                    <span>#{{ election.id }}</span>
+                </div>
+
+                <div class="detail-item">
+                    <span>Trạng thái</span>
+                    <span>
+                        {% if election.status == 'open' %}
+                            <span class="badge badge-open">Đang mở</span>
+                        {% else %}
+                            <span class="badge badge-closed">Đã đóng</span>
+                        {% endif %}
+                    </span>
+                </div>
+
+                <div class="detail-item">
+                    <span>Người đang đăng nhập</span>
+                    <span>{{ username }}</span>
+                </div>
+            </div>
+
+            {% if session.get('role') == 'admin' %}
+                <p class="warning">
+                    Tài khoản admin chỉ dùng để quản trị hệ thống. Vui lòng dùng tài khoản voter để bỏ phiếu.
+                </p>
+
+                <a class="btn" href="/admin">Quay lại quản trị</a>
+                <a class="btn btn-outline" href="/result/{{ election.id }}">Xem kết quả</a>
+
+            {% elif has_voted %}
+                <p class="success">
+                    Bạn đã bỏ phiếu trong cuộc bỏ phiếu này. Hệ thống không cho phép bỏ phiếu lần hai.
+                </p>
+
+                <a class="btn" href="/result/{{ election.id }}">Xem kết quả</a>
+                <a class="btn btn-outline" href="/blockchain">Xem Blockchain</a>
+
+            {% else %}
+                <p class="card-desc">
+                    Vui lòng chọn một ứng viên. Sau khi gửi, phiếu bầu sẽ được ghi vào Blockchain
+                    và bạn không thể bỏ phiếu lại trong cuộc bỏ phiếu này.
+                </p>
+
+                <form method="POST" action="/submit-vote">
+                    <input type="hidden" name="election_id" value="{{ election.id }}">
+
+                    {% for candidate in candidates %}
+                        <label class="vote-option">
+                            <input type="radio" name="candidate_id" value="{{ candidate.id }}" required>
+                            <div>
+                                <strong>{{ candidate.name }}</strong>
+                                <span>{{ candidate.description }}</span>
+                            </div>
+                        </label>
+                    {% endfor %}
+
+                    <button class="btn" type="submit">Gửi phiếu bầu</button>
+                    <a class="btn btn-outline" href="/vote">Quay lại</a>
+                </form>
+            {% endif %}
+        </div>
+
+    {% else %}
+
+        <div class="hero">
+            <h1>Danh sách cuộc bỏ phiếu</h1>
+            <p>
+                Chọn một cuộc bỏ phiếu đang mở để tham gia. Mỗi tài khoản chỉ được bỏ một phiếu
+                cho mỗi cuộc bỏ phiếu.
+            </p>
+        </div>
+
+        {% if elections %}
+            {% for election in elections %}
+                <div class="election-card">
+                    <div class="election-info">
+                        <h3>{{ election.title }}</h3>
+                        <p>{{ election.description }}</p>
+                        <span class="badge badge-open">Đang mở</span>
+                    </div>
+
+                    {% if session.get('role') == 'admin' %}
+                        <a class="btn btn-outline" href="/result/{{ election.id }}">Xem kết quả</a>
+                    {% else %}
+                        <a class="btn" href="/vote/{{ election.id }}">Tham gia bỏ phiếu</a>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="card empty-state">
+                <div class="icon">🗳️</div>
+                <h2>Chưa có cuộc bỏ phiếu nào đang mở</h2>
+                <p>Vui lòng quay lại sau hoặc liên hệ admin để mở cuộc bỏ phiếu.</p>
+
+                {% if session.get('role') == 'admin' %}
+                    <br>
+                    <a class="btn" href="/admin">Quay lại quản trị</a>
+                {% endif %}
+            </div>
+        {% endif %}
+
+    {% endif %}
+
+    <p class="footer-note">Phiếu bầu hợp lệ sẽ được lưu vào bảng blocks dưới dạng chuỗi Blockchain.</p>
+
+</div>
+
+</body>
+</html>
